@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Assignment4
 {
-    class Program
+    public class Program
     {
         
         static void Main(string[] args)
