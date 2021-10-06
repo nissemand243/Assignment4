@@ -14,8 +14,7 @@ namespace Assignment4
         static void Main(string[] args)
         {
             var configuration = LoadConfiguration();
-            var connectionString = "Server=localhost;Database=Kanban;User Id=sa;Password=kode"; //illegal
-            Console.WriteLine(connectionString); 
+            var connectionString = "Server=localhost;Database=Kanban;User Id=sa;Password=kode"; //configuration.GetConnectionString("Kanban"); //"Server=localhost;Database=Kanban;User Id=sa;Password=kode"; //illegal 
             var optionsBuilder = new DbContextOptionsBuilder<KanbanContext>().UseSqlServer(connectionString);
             using var context = new KanbanContext(optionsBuilder.Options);
         }

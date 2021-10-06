@@ -18,7 +18,7 @@ namespace Assignment4
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var connectionString = "Server=localhost;Database=Kanban;User Id=sa;Password=kode";
+            var connectionString = "Server=localhost;Database=Kanban;User Id=sa;Password=kode"; //configuration.GetConnectionString("Kanban");
 
             var optionsBuilder = new DbContextOptionsBuilder<KanbanContext>()
                 .UseSqlServer(connectionString);
