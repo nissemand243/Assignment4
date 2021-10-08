@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Assignment4.Core;
+using System.Linq; 
 using Microsoft.Extensions.Configuration;
 
 namespace Assignment4.Entities
@@ -11,82 +12,90 @@ namespace Assignment4.Entities
     {
 
         private readonly SqlConnection _connection; 
+        private readonly IKanbanContext _context; 
 
-         public TaskRepository(SqlConnection connection)
+         public TaskRepository(SqlConnection connection, IKanbanContext context)
         {
             _connection = connection; 
-        } 
-        public IReadOnlyCollection<TaskDTO> All()
+            _context = context; 
+        }
+
+        public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
             throw new System.NotImplementedException();
         }
 
-        public int Create(TaskDTO task)
+        public Response Delete(int taskId)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public void Delete(int taskId)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            _connection.Dispose(); 
-        }
-
-        public TaskDetailsDTO FindById(int id)
-        {
-            var SQLText = @"SELECT *
-                            FROM Tasks as T
-                            WHERE T.id = @Id"; 
-
-
-            using var command = new SqlCommand(SQLText, _connection); 
-            command.Parameters.AddWithValue("@Id", id); 
-            OpenConnection();
-            using var reader = command.ExecuteReader(); 
-
-            //tests fejler hvis man fjerner udkommentering 
-            var task = reader.Read() 
-                ? new TaskDetailsDTO
-                {
-                    Id = reader.GetInt32("Id"),
-                    Title = reader.GetString("Title"),
-                    Description = reader.GetString("Description"),
-                    //AssignedToId = reader.GetInt32("AssignedToId"), 
-                    //AssignedToName = reader.GetString("AssignedToName"),
-                    AssignedToEmail = reader.GetString("AssignedToEmail"),
-                    //Tags = (IEnumerable<string>) reader.GetStream("Tags"), 
-                    //State = (State) reader.GetValue("State") 
-
-                }
-                : null; 
-
-            CloseConnection();
-            return task;     
-        }
-
-        public void Update(TaskDTO task)
-        {
-            throw new System.NotImplementedException();
-        }
-        public void OpenConnection() 
-        {
-            if (_connection.State == ConnectionState.Closed)
+            var task = _context.Tasks.Find(taskId); 
+            if(task.State == State.New) 
             {
-                _connection.Open();
-            }
-
-        }
-        
-        private void CloseConnection()
-        {
-            if (_connection.State == ConnectionState.Open)
+                _context.Tasks.Remove(task); 
+                _context.saveChanges(); 
+                return Response.Deleted; 
+            } 
+            else if(task.State == State.Active)
             {
-                _connection.Close();
+                task.State = State.Removed; 
+                _context.saveChanges(); 
+                return Response.Updated;
             }
+            else 
+            {   
+                _context.saveChanges(); 
+                return Response.Conflict; 
+            }
+            
+        }
+
+        public TaskDetailsDTO Read(int taskId)
+        {
+    
+           /*  var task = from t in _context.Tasks
+                       where t.Id == taskId 
+                       select new TaskDetailsDTO(
+                           t.Id, 
+                           t.Title, 
+                           t.Description,
+                           new System.DateTime(), 
+                           t.AssignedTo.Name, 
+                           t.Tags.Select(t => t.name).ToList(), 
+                           t.
+                           
+                       ); 
+         
+            return task.FirstOrDefault();  */
+            throw new System.NotImplementedException(); 
+        }
+
+        public IReadOnlyCollection<TaskDTO> ReadAll()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReadOnlyCollection<TaskDTO> ReadAllByState(State state)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReadOnlyCollection<TaskDTO> ReadAllByTag(string tag)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public IReadOnlyCollection<TaskDTO> ReadAllRemoved()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Response Update(TaskUpdateDTO task)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

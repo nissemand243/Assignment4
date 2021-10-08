@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Assignment4.Entities; 
@@ -12,6 +13,7 @@ namespace Assignment4
         {
             var configuration = LoadConfiguration();
             var connectionString = configuration.GetConnectionString("Kanban"); //"Server=localhost;Database=Kanban;User Id=sa;Password=kode";  
+            Console.WriteLine(connectionString);
             var optionsBuilder = new DbContextOptionsBuilder<KanbanContext>().UseSqlServer(connectionString);
             using var context = new KanbanContext(optionsBuilder.Options);
 

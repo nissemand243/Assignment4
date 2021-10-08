@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Assignment4.Entities
 {
-    public class KanbanContext : DbContext
+    public class KanbanContext : DbContext, IKanbanContext
     {
         public DbSet<Tag> Tags{get; set;}
         public DbSet<User> Users{get; set;}
@@ -18,6 +18,10 @@ namespace Assignment4.Entities
         {
             modelBuilder.Entity<Task>().Property(e => e.State).HasConversion(new EnumToStringConverter<State>());
         }
-        
+
+        public int saveChanges()
+        {
+            return SaveChanges(); 
+        }
     }
 }
