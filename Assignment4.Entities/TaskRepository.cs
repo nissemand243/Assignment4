@@ -28,6 +28,10 @@ namespace Assignment4.Entities
         public Response Delete(int taskId)
         {
             var task = _context.Tasks.Find(taskId); 
+            if(task == null)
+            {
+                return Response.NotFound; 
+            }
             if(task.State == State.New) 
             {
                 _context.Tasks.Remove(task); 
