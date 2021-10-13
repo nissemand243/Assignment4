@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Assignment4.Core;
+using System.Linq;
 
 namespace Assignment4.Entities
 {
@@ -30,7 +31,6 @@ namespace Assignment4.Entities
 
         public Response Delete(int userId, bool force = false)
         {
-            //should this tage højde for that a user can be assigned to a task that is resolved? dunno
             var user = _context.Users.Find(userId); 
             if(user.Tasks.Count == 0)
             {
@@ -51,6 +51,8 @@ namespace Assignment4.Entities
                         return Response.Conflict;
                     }
                 }
+                _context.Users.Remove(user);
+                return Response.Deleted;
             }
             else 
             {
@@ -60,17 +62,35 @@ namespace Assignment4.Entities
 
         public UserDTO Read(int userId)
         {
-            throw new System.NotImplementedException();
+           var user = from u in _context.Users
+                       where u.Id == userId
+                       select new UserDTO(
+                           u.Id,
+                           u.Email,
+                           u.Name
+                       );
+
+            return user.FirstOrDefault();
         }
 
         public IReadOnlyCollection<UserDTO> ReadAll()
         {
-            throw new System.NotImplementedException();
+            return _context.Users.Select(u => new UserDTO(u.Id, u.Email, u.Name)).ToList().AsReadOnly();
         }
 
         public Response Update(UserUpdateDTO user)
         {
-            throw new System.NotImplementedException();
+            var userToBeUpdated = _context.Users.Find(user.Id); 
+            if(userToBeUpdated == null)
+            {
+                return Response.NotFound; 
+            }
+            userToBeUpdated.Id = user.Id;
+            userToBeUpdated.Email = user.Email;
+            userToBeUpdated.Name = user.Name;
+
+            _context.saveChanges();
+            return Response.Updated;
         }
     }
 }
