@@ -25,7 +25,7 @@ namespace Assignment4.Entities
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
-                //AssignedTo =  _context.Users.Find(task.AssignedToId), 
+                //AssignedTo =  _context.Users.Find(task.AssignedToId), //det her virker ikke... 
                 Description = task.Description, 
                 State = State.New, 
                 Created = System.DateTime.UtcNow, 
@@ -70,37 +70,45 @@ namespace Assignment4.Entities
 
         public TaskDetailsDTO Read(int taskId)
         {
-    
-           /*  var task = from t in _context.Tasks
-                       where t.Id == taskId 
+            var task = from t in _context.Tasks
+                       where t.Id == taskId
                        select new TaskDetailsDTO(
                            t.Id, 
                            t.Title, 
                            t.Description,
-                           new System.DateTime(), 
-                           t.AssignedTo.Name, 
+                           t.Created, 
+                           t.AssignedTo.Name,
                            t.Tags.Select(t => t.name).ToList(), 
-                           t.
-                           
-                       ); 
-         
-            return task.FirstOrDefault();  */
-            throw new System.NotImplementedException(); 
+                           t.State,
+                           t.StateUpdated
+                       );
+
+            return task.FirstOrDefault();
         }
 
-        public IReadOnlyCollection<TaskDTO> ReadAll()
+        public IReadOnlyCollection<TaskDTO> ReadAll() // DENNE ER IKKE TESTET
         {
-            throw new System.NotImplementedException();
+            return _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
+           
+            /*
+            //there might be a more clever way to do this 
+            var returnList = new List<TaskDTO>(); 
+            foreach(var task in _context.Tasks)
+            {
+                var dto = new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.name).ToList(), task.State);
+                returnList.Add(dto);
+            }
+            return returnList; */
         }
 
         public IReadOnlyCollection<TaskDTO> ReadAllByState(State state)
         {
-            throw new System.NotImplementedException();
+            return _context.Tasks.Where(t => t.State == state).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
         public IReadOnlyCollection<TaskDTO> ReadAllByTag(string tag)
         {
-            throw new System.NotImplementedException();
+            return _context.Tasks.Where(t => t.Tags.Select(ta => ta.name).ToList().Contains(tag)).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
         public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId)

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Sqlite;
 using Microsoft.Data.Sqlite;
+using System.Linq;
 
 namespace Assignment4.Entities.Tests
 {
@@ -145,5 +146,123 @@ namespace Assignment4.Entities.Tests
             var response = repo.Update(taskUpdated);
             Assert.Equal(Response.NotFound, response);
         }
+
+        [Fact]
+        public void Read_returns_correct_task()
+        {
+            var connection = new SqliteConnection("Filename=:memory:");
+            connection.Open();
+            var builder = new DbContextOptionsBuilder<KanbanContext>();
+            builder.UseSqlite(connection); 
+            var context = new KanbanContext(builder.Options); 
+            context.Database.EnsureCreated();
+            var repo = new TaskRepository(context);
+
+            //create an object to be read
+            var task = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 5, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+            repo.Create(task);
+
+            var result = repo.Read(1); 
+            Assert.Equal("Java", result.Title);
+            Assert.Equal("Nice coffee", result.Description);
+        }
+
+        [Fact]
+        public void ReadAll_returns_all_tasks()
+        {
+            var connection = new SqliteConnection("Filename=:memory:");
+            connection.Open();
+            var builder = new DbContextOptionsBuilder<KanbanContext>();
+            builder.UseSqlite(connection); 
+            var context = new KanbanContext(builder.Options); 
+            context.Database.EnsureCreated();
+            var repo = new TaskRepository(context);
+
+            var task1 = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 5, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+            repo.Create(task1);
+            var task2 = new TaskCreateDTO 
+            {
+                Title = "CSharp",
+                AssignedToId = 6, 
+                Description = "Black",
+                Tags = new List<string> {"Urgent"}
+            };
+            repo.Create(task2);
+            var results = repo.ReadAll(); 
+            var expected = context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
+            /* Assert.True(results is IReadOnlyCollection<TaskDTO>);
+            Assert.Collection(results, 
+                t => Assert.Equal(new TaskDTO(1, "Java", "", new List<string>{"Important"}, State.New), t),
+                t => Assert.Equal(new TaskDTO(2, "CSharp", "", new List<string>{"Urgent"}, State.New), t)
+            ); */
+            //det ovenover fucker nok fordi listerne inde i records ikke er det samme 
+            for(int i = 0; i< results.Count(); i++)
+            {
+                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
+            }
+            
+           /* dONT Delete comments cuz gang shit   
+            var results = repo.ReadAll(); 
+            List<TaskDTO> denlede = results.ToList(); 
+            List<TaskDTO> dennye = expected.ToList(); 
+            Assert.Equal(dennye, denlede); 
+            //hvordan fanden skal man teste disse ireadonlycollections??  */
+        }
+
+        [Fact]
+        public void ReadAllByState_returns_all_correct_tasks()
+        {
+            var connection = new SqliteConnection("Filename=:memory:");
+            connection.Open();
+            var builder = new DbContextOptionsBuilder<KanbanContext>();
+            builder.UseSqlite(connection); 
+            var context = new KanbanContext(builder.Options); 
+            context.Database.EnsureCreated();
+            var repo = new TaskRepository(context);
+
+            var task1 = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 5, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+            repo.Create(task1);
+            var task2 = new TaskCreateDTO 
+            {
+                Title = "CSharp",
+                AssignedToId = 6, 
+                Description = "Black",
+                Tags = new List<string> {"Urgent"}
+            };
+            repo.Create(task2);
+            var results = repo.ReadAllByState(State.New); 
+            var expected = context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
+            /* Assert.True(results is IReadOnlyCollection<TaskDTO>);
+            Assert.Collection(results, 
+                t => Assert.Equal(new TaskDTO(1, "Java", "", new List<string>{"Important"}, State.New), t),
+                t => Assert.Equal(new TaskDTO(2, "CSharp", "", new List<string>{"Urgent"}, State.New), t)
+            ); */
+            //det ovenover fucker nok fordi listerne inde i records ikke er det samme 
+            for(int i = 0; i< results.Count(); i++)
+            {
+                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
+            }
+
+        }
+
+        
     }
 }
