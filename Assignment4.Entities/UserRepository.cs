@@ -42,6 +42,16 @@ namespace Assignment4.Entities
                 _context.Users.Remove(user);
                 return Response.Deleted;
             }
+            else if(user.Tasks.Count > 0 && force == false)
+            {
+                foreach(var task in user.Tasks)
+                {
+                    if(task.State != State.Closed || task.State != State.Removed)
+                    {
+                        return Response.Conflict;
+                    }
+                }
+            }
             else 
             {
                 return Response.Conflict;
