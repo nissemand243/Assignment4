@@ -22,7 +22,22 @@ namespace Assignment4.Entities
 
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
-            throw new System.NotImplementedException();
+            //mangler business rule 2.5 = create/update task must allow for editing tags?
+            var taskToBeAdded = new Task
+            {
+                Title = task.Title,
+                //AssignedTo = task.?? det er jo en user og task giver et id? skal den fange en user i databasen ud fra det id? 
+                Description = task.Description, 
+                State = State.New, 
+                Created = System.DateTime.UtcNow, 
+                StateUpdated = System.DateTime.UtcNow, 
+                Tags = GetTags(task.Tags).ToList() 
+            };
+
+            _context.Tasks.Add(taskToBeAdded);
+            _context.saveChanges(); 
+
+            return (Response.Created, taskToBeAdded.Id);
         }
 
         public Response Delete(int taskId)
@@ -100,6 +115,16 @@ namespace Assignment4.Entities
         public Response Update(TaskUpdateDTO task)
         {
             throw new System.NotImplementedException();
+        }
+
+
+        public IEnumerable<Tag> GetTags(IEnumerable<string> tags)
+        {
+            var existing = _context.Tags.Where(t => tags.Contains(t.name)).ToDictionary(t => t.name);
+            foreach(var tag in tags)
+            {
+                yield return existing.TryGetValue(tag, out var t) ? t : new Tag {name = tag}; 
+            }
         }
     }
 }
