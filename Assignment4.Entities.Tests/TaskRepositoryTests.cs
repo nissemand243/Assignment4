@@ -10,11 +10,12 @@ using System.Linq;
 
 namespace Assignment4.Entities.Tests
 {
-    //[TestCaseOrderer("XUnit.Project.Orderers.PriorityOrderer", "XUnit.Project")]
     public class TaskRepositoryTests
     {   
-        [Fact]
-        public void Create_returns_created_response_and_id()
+        private readonly KanbanContext _context; 
+        private readonly TaskRepository _repo; 
+
+        public TaskRepositoryTests()
         {
             //opret db
             var connection = new SqliteConnection("Filename=:memory:");
@@ -24,65 +25,81 @@ namespace Assignment4.Entities.Tests
             var context = new KanbanContext(builder.Options); 
             context.Database.EnsureCreated(); 
 
-            //init repo
-            var repo = new TaskRepository(context); 
+             var important = new Tag     { Id = 1, name = "Important" };
+            var doesNotMatter = new Tag { Id = 2, name = "Does not matter" };
+            var asap = new Tag          { Id = 3, name = "ASAP" };
+            var easy = new Tag          { Id = 4, name = "Easy" };
+            var hard = new Tag          { Id = 5, name = "Hard" };
+            var medium = new Tag        { Id = 6, name = "Medium" };
+            var testUser = new User {Id = 25, Name = "Karate Kanninen Karina", Email = "cirkelspark@karateklubben.com"}; //this is only for the id to be used in the java task (bcuz of DTO class)
 
-            var task = new TaskCreateDTO 
-            {
-                Title = "Java",
-                AssignedToId = 5, 
-                Description = "Nice coffee",
-                Tags = new List<string> {"Important"}
-            };
+            var finnishJava = new Task          {Id = 1, Title = "Java", Description = "Flot", AssignedTo = testUser,  State = 0, Tags = new List<Tag> {asap, important, hard}};
+            var makeCoffe = new Task            {Id = 2, Title = "Coffee", State = 0, Tags = new List<Tag> {doesNotMatter, medium}};
+            var helloWorld = new Task           {Id = 3, Title = "World", State = 0, Tags = new List<Tag> {asap, easy}};
+            var beingLate = new Task            {Id = 4, Title = "Late", State = 0, Tags = new List<Tag> {important, doesNotMatter, medium, easy}};
+            var makingFun = new Task            {Id = 5, Title = "Fun", State = 0, Tags = new List<Tag> {doesNotMatter, hard}};
+            var codingClasses = new Task        {Id = 6, Title = "Classes", State = 0, Tags = new List<Tag> {asap, medium, doesNotMatter}};
+            var lookingAtFacebook = new Task    {Id = 7, Title = "Facebook", State = 0, Tags = new List<Tag> {important, doesNotMatter, easy}};
+            var cricizingTheExercise = new Task {Id = 8, Title = "Exercise", State = 0, Tags = new List<Tag> {doesNotMatter}};
+            var goingToSleep = new Task         {Id = 9, Title = "Sleep", State = 0, Tags = new List<Tag> {hard, easy}};
+            var debuggingTheProgram = new Task  {Id = 10, Title = "Program", State = 0, Tags = new List<Tag> {asap, important, doesNotMatter, hard, medium, easy}};
 
-            var response = repo.Create(task); 
-            Assert.Equal(Response.Created,response.Response); 
-            Assert.Equal(1, response.TaskId); 
+            context.Users.AddRange(
+                new User {Id = 1, Name = "Karate Kanninen Karina", Email = "cirkelspark@karateklubben.com", Tasks = new List<Task>{finnishJava, debuggingTheProgram, codingClasses}},
+                new User {Id = 2, Name = "Flyvende Bombe Niels", Email = "pilot@911.com", Tasks = new List<Task>{makeCoffe, goingToSleep}},
+                new User {Id = 3, Name = "Henning Højspæning", Email = "atomkraftværker@home.com", Tasks = new List<Task>{helloWorld, cricizingTheExercise}},
+                new User {Id = 4, Name = "Vibe Vinkelret", Email = "seminekatte@matematiklærer.com", Tasks = new List<Task>{beingLate, lookingAtFacebook, makingFun}}
+                );
+
+            context.SaveChanges();
+
+
+            _context = context; 
+            _repo = new TaskRepository(_context);
         }
 
 
         [Fact]
+        public void Create_returns_created_response_and_id()
+        {
+            var task = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 1, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+
+            var response = _repo.Create(task); 
+            Assert.Equal(Response.Created,response.Response); 
+            Assert.Equal(11, response.TaskId); 
+        }
+        
+
+        [Fact]
+        public void Create_with_non_existing_user_returns_badrequest()
+        {
+            //wooow, der skal jo ikke si
+
+
+
+        }
+
+        [Fact]
         public void Delete_with_non_existing_entry_returns_notfound()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-
-            var repo = new TaskRepository(context); 
-            var deleted = repo.Delete(1);
+            var deleted = _repo.Delete(400);
             Assert.Equal(Response.NotFound, deleted);
         }
 
         [Fact]
         public void Delete_returns_proper_response_and_removes_task()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-
-            var repo = new TaskRepository(context); 
-            //creating a new task just to delete it :)
-            var task = new TaskCreateDTO 
-            {
-                Title = "Java",
-                AssignedToId = 5, 
-                Description = "Nice coffee",
-                Tags = new List<string> {"Important"}
-            };
-            //check that nothing exists before 
-            Assert.Equal(Response.NotFound, repo.Delete(1));
-            repo.Create(task);
             //Create method is tested above, so no checking that
-            var deleted = repo.Delete(1);
+            var deleted = _repo.Delete(1);
             Assert.Equal(Response.Deleted, deleted);
             //check that the entity actually is removed
-            Assert.Equal(Response.NotFound, repo.Delete(1));
+            Assert.Equal(Response.NotFound, _repo.Delete(1));
 
             //multiple asserts = bad? 
         }
@@ -90,14 +107,6 @@ namespace Assignment4.Entities.Tests
         [Fact]
         public void Update_successful_returns_proper_response()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-
-            var repo = new TaskRepository(context);
             //create an element to be updated
             var task = new TaskCreateDTO 
             {
@@ -106,7 +115,7 @@ namespace Assignment4.Entities.Tests
                 Description = "Nice coffee",
                 Tags = new List<string> {"Important"}
             };
-            repo.Create(task);
+            _repo.Create(task);
             
             var taskUpdated = new TaskUpdateDTO 
             {
@@ -116,9 +125,9 @@ namespace Assignment4.Entities.Tests
                 Description = "Black",
                 Tags = new List<string> {"Urgent"}
             };
-            var response = repo.Update(taskUpdated);
+            var response = _repo.Update(taskUpdated);
             Assert.Equal(Response.Updated, response);
-            var taskNew = context.Tasks.Find(1);
+            var taskNew = _context.Tasks.Find(1);
             Assert.Equal("CSharp", taskNew.Title);
             Assert.Equal("Black", taskNew.Description);
             //mangler evt. de sidste properties
@@ -127,14 +136,31 @@ namespace Assignment4.Entities.Tests
         [Fact]
         public void Update_with_non_existing_returns_not_found()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
+            var taskUpdated = new TaskUpdateDTO 
+            {
+                Id = 1337,
+                Title = "CSharp",
+                AssignedToId = 5, 
+                Description = "Black",
+                Tags = new List<string> {"Urgent"}
+            };
+            var response = _repo.Update(taskUpdated);
+            Assert.Equal(Response.NotFound, response);
+        }
 
-            var repo = new TaskRepository(context);
+
+        [Fact]
+        public void Update_given_new_state_updates_stateupdated_timestamp()
+        {
+            var task = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 5, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+            _repo.Create(task);
+            var oldTime = _context.Tasks.Find(1).StateUpdated; 
             var taskUpdated = new TaskUpdateDTO 
             {
                 Id = 1,
@@ -143,119 +169,36 @@ namespace Assignment4.Entities.Tests
                 Description = "Black",
                 Tags = new List<string> {"Urgent"}
             };
-            var response = repo.Update(taskUpdated);
-            Assert.Equal(Response.NotFound, response);
+            _repo.Update(taskUpdated); 
+            var newTime = _context.Tasks.Find(1).StateUpdated;
+            Assert.False(oldTime == newTime);
         }
 
         [Fact]
         public void Read_returns_correct_task()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-            var repo = new TaskRepository(context);
-
-            //create an object to be read
-            var task = new TaskCreateDTO 
-            {
-                Title = "Java",
-                AssignedToId = 5, 
-                Description = "Nice coffee",
-                Tags = new List<string> {"Important"}
-            };
-            repo.Create(task);
-
-            var result = repo.Read(1); 
+            var result = _repo.Read(1); 
             Assert.Equal("Java", result.Title);
-            Assert.Equal("Nice coffee", result.Description);
+            Assert.Equal("Flot", result.Description);
         }
 
         [Fact]
         public void ReadAll_returns_all_tasks()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-            var repo = new TaskRepository(context);
-
-            var task1 = new TaskCreateDTO 
-            {
-                Title = "Java",
-                AssignedToId = 5, 
-                Description = "Nice coffee",
-                Tags = new List<string> {"Important"}
-            };
-            repo.Create(task1);
-            var task2 = new TaskCreateDTO 
-            {
-                Title = "CSharp",
-                AssignedToId = 6, 
-                Description = "Black",
-                Tags = new List<string> {"Urgent"}
-            };
-            repo.Create(task2);
-            var results = repo.ReadAll(); 
-            var expected = context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
-            /* Assert.True(results is IReadOnlyCollection<TaskDTO>);
-            Assert.Collection(results, 
-                t => Assert.Equal(new TaskDTO(1, "Java", "", new List<string>{"Important"}, State.New), t),
-                t => Assert.Equal(new TaskDTO(2, "CSharp", "", new List<string>{"Urgent"}, State.New), t)
-            ); */
-            //det ovenover fucker nok fordi listerne inde i records ikke er det samme 
+            var results = _repo.ReadAll(); 
+            var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
+            //the smart way to think about records  
             for(int i = 0; i< results.Count(); i++)
             {
                 Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
             }
-            
-           /* dONT Delete comments cuz gang shit   
-            var results = repo.ReadAll(); 
-            List<TaskDTO> denlede = results.ToList(); 
-            List<TaskDTO> dennye = expected.ToList(); 
-            Assert.Equal(dennye, denlede); 
-            //hvordan fanden skal man teste disse ireadonlycollections??  */
         }
 
         [Fact]
         public void ReadAllByState_returns_all_correct_tasks()
         {
-            var connection = new SqliteConnection("Filename=:memory:");
-            connection.Open();
-            var builder = new DbContextOptionsBuilder<KanbanContext>();
-            builder.UseSqlite(connection); 
-            var context = new KanbanContext(builder.Options); 
-            context.Database.EnsureCreated();
-            var repo = new TaskRepository(context);
-
-            var task1 = new TaskCreateDTO 
-            {
-                Title = "Java",
-                AssignedToId = 5, 
-                Description = "Nice coffee",
-                Tags = new List<string> {"Important"}
-            };
-            repo.Create(task1);
-            var task2 = new TaskCreateDTO 
-            {
-                Title = "CSharp",
-                AssignedToId = 6, 
-                Description = "Black",
-                Tags = new List<string> {"Urgent"}
-            };
-            repo.Create(task2);
-            var results = repo.ReadAllByState(State.New); 
-            var expected = context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
-            /* Assert.True(results is IReadOnlyCollection<TaskDTO>);
-            Assert.Collection(results, 
-                t => Assert.Equal(new TaskDTO(1, "Java", "", new List<string>{"Important"}, State.New), t),
-                t => Assert.Equal(new TaskDTO(2, "CSharp", "", new List<string>{"Urgent"}, State.New), t)
-            ); */
-            //det ovenover fucker nok fordi listerne inde i records ikke er det samme 
+            var results = _repo.ReadAllByState(State.New); 
+            var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
             for(int i = 0; i< results.Count(); i++)
             {
                 Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 

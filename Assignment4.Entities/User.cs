@@ -12,7 +12,6 @@ namespace Assignment4.Entities
         public string Name { get; set; }
 
         [Required]
-        [Key]
         [StringLength(100)]
         [EmailAddress]
         public string Email { get; set; }

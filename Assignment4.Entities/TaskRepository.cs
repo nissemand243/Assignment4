@@ -20,19 +20,21 @@ namespace Assignment4.Entities
 
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
-            //mangler business rule 2.5 = create/update task must allow for editing tags?
-            //2.5 betyder: "når du opretter/opdaterer en task, skal der kunne tilføjes/fjernes tags?"
+            //2.5: hvis tag ikke findes i forvejen, så skal det bare oprettes :)) 
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
-                //AssignedTo =  _context.Users.Find(task.AssignedToId), //det her virker ikke... 
+                AssignedTo =  _context.Users.Find(task.AssignedToId),
                 Description = task.Description, 
                 State = State.New, 
                 Created = System.DateTime.UtcNow, 
                 StateUpdated = System.DateTime.UtcNow, 
                 Tags = GetTags(task.Tags).ToList() 
             };
-
+            if(taskToBeAdded.AssignedTo == null)
+            {
+                return (Response.BadRequest, taskToBeAdded.Id); 
+            }
             _context.Tasks.Add(taskToBeAdded);
             _context.saveChanges(); 
 
@@ -89,16 +91,6 @@ namespace Assignment4.Entities
         public IReadOnlyCollection<TaskDTO> ReadAll() // DENNE ER IKKE TESTET
         {
             return _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
-           
-            /*
-            //there might be a more clever way to do this 
-            var returnList = new List<TaskDTO>(); 
-            foreach(var task in _context.Tasks)
-            {
-                var dto = new TaskDTO(task.Id, task.Title, task.AssignedTo.Name, task.Tags.Select(t => t.name).ToList(), task.State);
-                returnList.Add(dto);
-            }
-            return returnList; */
         }
 
         public IReadOnlyCollection<TaskDTO> ReadAllByState(State state)
@@ -130,7 +122,7 @@ namespace Assignment4.Entities
             }
             taskToBeUpdated.Title = task.Title; 
             taskToBeUpdated.Description = task.Description; 
-            //taskToBeUpdated.AssignedTo = _context.Users.Find(task.AssignedToId); 
+            taskToBeUpdated.AssignedTo = _context.Users.Find(task.AssignedToId); 
             taskToBeUpdated.State = task.State; 
             taskToBeUpdated.StateUpdated = System.DateTime.UtcNow; 
             taskToBeUpdated.Tags = GetTags(task.Tags).ToList(); 
