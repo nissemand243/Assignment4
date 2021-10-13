@@ -11,12 +11,10 @@ namespace Assignment4.Entities
     public class TaskRepository : ITaskRepository
     {
 
-        private readonly SqlConnection _connection; 
         private readonly IKanbanContext _context; 
 
-         public TaskRepository(SqlConnection connection, IKanbanContext context)
+         public TaskRepository(IKanbanContext context)
         {
-            _connection = connection; 
             _context = context; 
         }
 
