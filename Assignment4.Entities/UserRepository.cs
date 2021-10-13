@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Assignment4.Core;
 using System.Linq;
 
+
+//OBS DENNE KLASSE ER IKKE TESTET! 
 namespace Assignment4.Entities
 {
     public class UserRepository : IUserRepository
