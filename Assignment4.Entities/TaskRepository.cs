@@ -25,7 +25,7 @@ namespace Assignment4.Entities
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
-                AssignedTo =  _context.Users.Find(task.AssignedToId), 
+                //AssignedTo =  _context.Users.Find(task.AssignedToId), 
                 Description = task.Description, 
                 State = State.New, 
                 Created = System.DateTime.UtcNow, 
@@ -122,7 +122,7 @@ namespace Assignment4.Entities
             }
             taskToBeUpdated.Title = task.Title; 
             taskToBeUpdated.Description = task.Description; 
-            taskToBeUpdated.AssignedTo = _context.Users.Find(task.AssignedToId); 
+            //taskToBeUpdated.AssignedTo = _context.Users.Find(task.AssignedToId); 
             taskToBeUpdated.State = task.State; 
             taskToBeUpdated.StateUpdated = System.DateTime.UtcNow; 
             taskToBeUpdated.Tags = GetTags(task.Tags).ToList(); 

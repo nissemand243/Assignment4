@@ -16,7 +16,6 @@ namespace Assignment4.Entities
         public int Id { get; set; }
 
         [Required]
-        [Key]
         [StringLength(100)]
         public string Title { get; set; }
 
