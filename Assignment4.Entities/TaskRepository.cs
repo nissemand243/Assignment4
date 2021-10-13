@@ -21,6 +21,7 @@ namespace Assignment4.Entities
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
             //2.5: hvis tag ikke findes i forvejen, så skal det bare oprettes :)) 
+            //-> det findes allerede i GetTags-metoden (som vi har stjålet fra Rasmus og derfor ikke selv forstår)
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
@@ -88,7 +89,7 @@ namespace Assignment4.Entities
             return task.FirstOrDefault();
         }
 
-        public IReadOnlyCollection<TaskDTO> ReadAll() // DENNE ER IKKE TESTET
+        public IReadOnlyCollection<TaskDTO> ReadAll() 
         {
             return _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
@@ -103,14 +104,14 @@ namespace Assignment4.Entities
             return _context.Tasks.Where(t => t.Tags.Select(ta => ta.name).ToList().Contains(tag)).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
-        public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId)
+        public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId) //IKKE TESTET?
         {
-            throw new System.NotImplementedException();
+            return _context.Tasks.Where(t => t.AssignedTo.Id == userId).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
         public IReadOnlyCollection<TaskDTO> ReadAllRemoved()
         {
-            throw new System.NotImplementedException();
+             return _context.Tasks.Where(t => t.State == State.Removed).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
         public Response Update(TaskUpdateDTO task)
