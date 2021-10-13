@@ -1,7 +1,6 @@
 using System;
 using Assignment4.Core;
 using Xunit;
-using XUnit.Project.Attributes;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Sqlite;

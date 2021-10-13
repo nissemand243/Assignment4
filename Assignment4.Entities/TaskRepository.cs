@@ -104,12 +104,12 @@ namespace Assignment4.Entities
             return _context.Tasks.Where(t => t.Tags.Select(ta => ta.name).ToList().Contains(tag)).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
-        public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId) //IKKE TESTET?
+        public IReadOnlyCollection<TaskDTO> ReadAllByUser(int userId) //IKKE TESTET
         {
             return _context.Tasks.Where(t => t.AssignedTo.Id == userId).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
 
-        public IReadOnlyCollection<TaskDTO> ReadAllRemoved()
+        public IReadOnlyCollection<TaskDTO> ReadAllRemoved() //IKKE TESTET
         {
              return _context.Tasks.Where(t => t.State == State.Removed).Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList().AsReadOnly();
         }
