@@ -21,10 +21,11 @@ namespace Assignment4.Entities
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
             //mangler business rule 2.5 = create/update task must allow for editing tags?
+            //2.5 betyder: "når du opretter/opdaterer en task, skal der kunne tilføjes/fjernes tags?"
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
-                //AssignedTo = task.?? det er jo en user og task giver et id? skal den fange en user i databasen ud fra det id? 
+                AssignedTo =  _context.Users.Find(task.AssignedToId), 
                 Description = task.Description, 
                 State = State.New, 
                 Created = System.DateTime.UtcNow, 
@@ -37,6 +38,8 @@ namespace Assignment4.Entities
 
             return (Response.Created, taskToBeAdded.Id);
         }
+
+
 
         public Response Delete(int taskId)
         {
@@ -112,7 +115,21 @@ namespace Assignment4.Entities
 
         public Response Update(TaskUpdateDTO task)
         {
-            throw new System.NotImplementedException();
+            var taskToBeUpdated = _context.Tasks.Find(task.Id); 
+            if(taskToBeUpdated == null)
+            {
+                return Response.NotFound; 
+            }
+            taskToBeUpdated.Title = task.Title; 
+            taskToBeUpdated.Description = task.Description; 
+            taskToBeUpdated.AssignedTo = _context.Users.Find(task.AssignedToId); 
+            taskToBeUpdated.State = task.State; 
+            taskToBeUpdated.StateUpdated = System.DateTime.UtcNow; 
+            taskToBeUpdated.Tags = GetTags(task.Tags).ToList(); 
+
+            _context.saveChanges();
+            return Response.Updated;
+            
         }
 
 
