@@ -77,7 +77,24 @@ namespace Assignment4.Entities.Tests
             var closedResponse = _repo.Delete(6);
             Assert.Equal(Response.Deleted, removedResponse);
             Assert.Equal(Response.Deleted, closedResponse);
-            
+        }
+
+        [Fact]
+        public void Create_given_user_with_already_existing_email_returns_conflict()
+        {
+            var user = new UserCreateDTO {Name = "Mikkisfar", Email = "pilot@911.com"}; 
+            var response = _repo.Create(user);
+            Assert.Equal(Response.Conflict, response.Response);
+            //this one failed because our implementation of finding an existing user by email was wrong -> .Find cannot be used with email string
+            //i've changed the method to use Where and FirstOrDefault
+        }
+
+        [Fact]
+        public void Create_given_user_with_non_existing_email_returns_created() 
+        {
+            var user = new UserCreateDTO {Name = "Mikkisfar", Email = "hacks@hacks.dk"}; 
+            var response = _repo.Create(user);
+            Assert.Equal(Response.Created, response.Response);
         }
 
     }
