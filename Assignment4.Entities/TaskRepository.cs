@@ -21,7 +21,7 @@ namespace Assignment4.Entities
         public (Response Response, int TaskId) Create(TaskCreateDTO task)
         {
             //2.5: hvis tag ikke findes i forvejen, så skal det bare oprettes :)) 
-            //-> det findes allerede i GetTags-metoden (som vi har stjålet fra Rasmus og derfor ikke selv forstår)
+            //-> det findes allerede i GetTags-metoden (som vi har lånt af Rasmus)
             var taskToBeAdded = new Task
             {
                 Title = task.Title,
