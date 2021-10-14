@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Assignment4.Entities.Migrations
 {
-    public partial class InitialDreng : Migration
+    public partial class test : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -22,33 +23,37 @@ namespace Assignment4.Entities.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Email);
+                    table.PrimaryKey("PK_Users", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Tasks",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false),
-                    AssignedToEmail = table.Column<string>(type: "nvarchar(100)", nullable: true),
+                    AssignedToId = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    State = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    State = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    StateUpdated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tasks", x => x.Title);
+                    table.PrimaryKey("PK_Tasks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Tasks_Users_AssignedToEmail",
-                        column: x => x.AssignedToEmail,
+                        name: "FK_Tasks_Users_AssignedToId",
+                        column: x => x.AssignedToId,
                         principalTable: "Users",
-                        principalColumn: "Email",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -57,11 +62,11 @@ namespace Assignment4.Entities.Migrations
                 columns: table => new
                 {
                     Tagsname = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    TasksTitle = table.Column<string>(type: "nvarchar(100)", nullable: false)
+                    TasksId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TagTask", x => new { x.Tagsname, x.TasksTitle });
+                    table.PrimaryKey("PK_TagTask", x => new { x.Tagsname, x.TasksId });
                     table.ForeignKey(
                         name: "FK_TagTask_Tags_Tagsname",
                         column: x => x.Tagsname,
@@ -69,22 +74,34 @@ namespace Assignment4.Entities.Migrations
                         principalColumn: "name",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TagTask_Tasks_TasksTitle",
-                        column: x => x.TasksTitle,
+                        name: "FK_TagTask_Tasks_TasksId",
+                        column: x => x.TasksId,
                         principalTable: "Tasks",
-                        principalColumn: "Title",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_TagTask_TasksTitle",
-                table: "TagTask",
-                column: "TasksTitle");
+                name: "IX_Tags_name",
+                table: "Tags",
+                column: "name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_AssignedToEmail",
+                name: "IX_TagTask_TasksId",
+                table: "TagTask",
+                column: "TasksId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Tasks_AssignedToId",
                 table: "Tasks",
-                column: "AssignedToEmail");
+                column: "AssignedToId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

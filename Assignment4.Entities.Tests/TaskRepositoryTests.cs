@@ -16,7 +16,7 @@ namespace Assignment4.Entities.Tests
 
         public TaskRepositoryTests()
         {
-            //opret db
+            //create db
             var connection = new SqliteConnection("Filename=:memory:");
             connection.Open();
             var builder = new DbContextOptionsBuilder<KanbanContext>();

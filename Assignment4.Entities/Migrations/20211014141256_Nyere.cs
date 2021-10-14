@@ -2,7 +2,7 @@
 
 namespace Assignment4.Entities.Migrations
 {
-    public partial class DBvirker20 : Migration
+    public partial class Nyere : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
