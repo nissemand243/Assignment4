@@ -189,10 +189,10 @@ namespace Assignment4.Entities.Tests
         {
             var results = _repo.ReadAll(); 
             var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
-            //the smart way to think about records -> stringequals 
             for(int i = 0; i< results.Count(); i++)
             {
-                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
+                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); //record equality
+                Assert.Equal(results.ElementAt(i).Tags, expected.ElementAt(i).Tags); //list inside record equality
             }
         }
 
@@ -202,8 +202,9 @@ namespace Assignment4.Entities.Tests
             var results = _repo.ReadAllByState(State.New); 
             var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
             for(int i = 0; i< results.Count(); i++)
-            {   //this might not actually include the elements in the two records' lists of tags... 
-                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
+            {   
+                Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); //record equality
+                Assert.Equal(results.ElementAt(i).Tags, expected.ElementAt(i).Tags); //list inside record equality
             }
 
         }
