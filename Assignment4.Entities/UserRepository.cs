@@ -21,8 +21,9 @@ namespace Assignment4.Entities
                 Name = user.Name, 
                 Email = user.Email
             };
-            if(_context.Users.Where(u => u.Email == user.Email) != null)
+            if(_context.Users.Where(u => u.Email == user.Email).FirstOrDefault() != null)
             {
+
                 return (Response.Conflict, userToBeAdded.Id); 
             }
             _context.Users.Add(userToBeAdded);
