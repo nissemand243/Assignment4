@@ -78,10 +78,15 @@ namespace Assignment4.Entities.Tests
         [Fact]
         public void Create_with_non_existing_user_returns_badrequest()
         {
-            //wooow, der skal jo ikke si
-
-
-
+            var task = new TaskCreateDTO 
+            {
+                Title = "Java",
+                AssignedToId = 1337, 
+                Description = "Nice coffee",
+                Tags = new List<string> {"Important"}
+            };
+            var response = _repo.Create(task);
+            Assert.Equal(Response.BadRequest, response.Response);
         }
 
         [Fact]
@@ -99,8 +104,6 @@ namespace Assignment4.Entities.Tests
             Assert.Equal(Response.Deleted, deleted);
             //check that the entity actually is removed
             Assert.Equal(Response.NotFound, _repo.Delete(1));
-
-            //multiple asserts = bad? 
         }
 
         [Fact]
@@ -129,7 +132,7 @@ namespace Assignment4.Entities.Tests
             var taskNew = _context.Tasks.Find(1);
             Assert.Equal("CSharp", taskNew.Title);
             Assert.Equal("Black", taskNew.Description);
-            //mangler evt. de sidste properties
+            //Propably should include all properties for safety
         }
 
         [Fact]
@@ -170,7 +173,7 @@ namespace Assignment4.Entities.Tests
             };
             _repo.Update(taskUpdated); 
             var newTime = _context.Tasks.Find(1).StateUpdated;
-            Assert.False(oldTime == newTime);
+            Assert.False(oldTime == newTime); 
         }
 
         [Fact]
@@ -186,7 +189,7 @@ namespace Assignment4.Entities.Tests
         {
             var results = _repo.ReadAll(); 
             var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
-            //the smart way to think about records  
+            //the smart way to think about records -> stringequals 
             for(int i = 0; i< results.Count(); i++)
             {
                 Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
@@ -199,7 +202,7 @@ namespace Assignment4.Entities.Tests
             var results = _repo.ReadAllByState(State.New); 
             var expected = _context.Tasks.Select(t => new TaskDTO(t.Id, t.Title, t.AssignedTo.Name, t.Tags.Select(ta => ta.name).ToList(), t.State)).ToList();
             for(int i = 0; i< results.Count(); i++)
-            {
+            {   //this might not actually include the elements in the two records' lists of tags... 
                 Assert.Equal(results.ElementAt(i).ToString(), expected.ElementAt(i).ToString()); 
             }
 
